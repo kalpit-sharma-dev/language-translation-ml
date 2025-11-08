@@ -1,0 +1,33 @@
+# Baseline Transformer Configuration
+
+data:
+  train_src: data/cleaned/train.en
+  train_tgt: data/cleaned/train.de
+  dev_src: data/cleaned/dev.en
+  dev_tgt: data/cleaned/dev.de
+  test_src: data/cleaned/test.en
+  test_tgt: data/cleaned/test.de
+  tokenizer_dir: data/tokenized
+  joint_tokenizer: true  # Use shared vocabulary
+  max_len: 250
+
+model:
+  d_model: 512
+  nhead: 8
+  num_encoder_layers: 6
+  num_decoder_layers: 6
+  dim_feedforward: 2048
+  dropout: 0.1
+
+training:
+  batch_size: 16  # Reduced for small dataset
+  num_epochs: 10  # Reduced for quick testing
+  lr: 5e-4
+  warmup_steps: 400  # Reduced for small dataset
+  label_smoothing: 0.1
+  clip_grad: 1.0
+  eval_every: 1
+
+checkpoint_dir: checkpoints
+log_dir: logs
+
