@@ -1,14 +1,19 @@
-# Deep Learning-based English → German Translation
+# Deep Learning-based Neural Machine Translation
 
-A complete implementation of a Transformer-based Neural Machine Translation (NMT) system for English to German translation using the WMT parallel corpus or other datasets.
+A complete implementation of a Transformer-based Neural Machine Translation (NMT) system supporting:
+- **English → German** translation (WMT dataset)
+- **English → Indian Languages** (Hindi, Bengali, Telugu, Tamil, Gujarati, and more)
+- **Any language pair** with parallel corpus data
 
 ## 📋 Table of Contents
 
 - [Project Overview](#project-overview)
 - [Features](#features)
+- [Supported Languages](#supported-languages)
 - [Project Structure](#project-structure)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
+- [Indian Languages Support](#indian-languages-support)
 - [Usage](#usage)
 - [Configuration](#configuration)
 - [Training](#training)
@@ -22,7 +27,12 @@ A complete implementation of a Transformer-based Neural Machine Translation (NMT
 
 ## 🎯 Project Overview
 
-This project implements a complete Neural Machine Translation system using the Transformer architecture. The system is trained on parallel English-German corpora and can translate English sentences to German with state-of-the-art performance.
+This project implements a complete Neural Machine Translation system using the Transformer architecture. The system supports:
+- **English → German** translation (WMT dataset)
+- **English → Indian Languages** (Hindi, Bengali, Telugu, Tamil, Gujarati, Kannada, Malayalam, Marathi, Punjabi, Urdu, and more)
+- **Any language pair** - the architecture is language-agnostic
+
+The system can be trained on any parallel corpus and translates between language pairs with state-of-the-art performance.
 
 ### Key Components
 
@@ -45,6 +55,36 @@ This project implements a complete Neural Machine Translation system using the T
 - ✅ TensorBoard logging
 - ✅ Model checkpointing and resuming
 - ✅ Support for multiple experiment configurations
+- ✅ **Indian Languages Support**: Hindi, Bengali, Telugu, Tamil, Gujarati, and more
+- ✅ **Multilingual Ready**: Easy to extend to any language pair
+
+## 🌏 Supported Languages
+
+### European Languages
+- ✅ English → German (WMT dataset)
+- ✅ Can be extended to: French, Spanish, Italian, etc.
+
+### Indian Languages
+- ✅ **Hindi** (Devanagari script)
+- ✅ **Bengali** (Bengali script)
+- ✅ **Telugu** (Telugu script)
+- ✅ **Tamil** (Tamil script)
+- ✅ **Gujarati** (Gujarati script)
+- ✅ **Kannada** (Kannada script)
+- ✅ **Malayalam** (Malayalam script)
+- ✅ **Marathi** (Devanagari script)
+- ✅ **Punjabi** (Gurmukhi script)
+- ✅ **Urdu** (Perso-Arabic script)
+- ✅ **Odia** (Odia script)
+- ✅ **Assamese** (Assamese script)
+
+**Language-Specific Considerations:**
+- **Script Handling**: SentencePiece handles all Indian scripts (Devanagari, Bengali, Dravidian, etc.)
+- **Vocabulary Size**: Auto-adjusts for small datasets (500-2000 for <10K sentences, 32000+ for large datasets)
+- **Data Sources**: IIT Bombay corpus, Samanantar, OPUS
+- **Character Coverage**: Uses 0.9995 coverage which works well for Indian scripts
+
+**For Other Indian Languages:** Replace `hi` with `bn` (Bengali), `te` (Telugu), `ta` (Tamil), `gu` (Gujarati), etc.
 
 ## 📁 Project Structure
 
@@ -125,6 +165,70 @@ python -c "import nltk; nltk.download('punkt')"
 ## 🏃 Quick Start
 
 For a detailed quick start guide, see [quickstart.md](quickstart.md).
+
+### For English → German
+Follow the standard quick start guide.
+
+### For English → Indian Languages
+See [Indian Languages Support](#indian-languages-support) section below or [docs/INDIAN_LANGUAGES.md](docs/INDIAN_LANGUAGES.md).
+
+## 🌏 Indian Languages Support
+
+The project fully supports translation to and from Indian languages. Here's a quick example for **English → Hindi**:
+
+```bash
+# 1. Download Hindi dataset
+python scripts/download_indian_languages.py \
+    --target_lang hi \
+    --use_sample \
+    --sample_size 1000 \
+    --split
+
+# 2. Train tokenizer
+bash scripts/train_tokenizer.sh \
+    data/cleaned/train.en \
+    data/cleaned/train.hi \
+    data/tokenized \
+    32000 \
+    true
+
+# 3. Train model (use Hindi config)
+python -m src.trainer --config configs/transformer_hindi.yaml
+
+# 4. Translate
+python -m src.infer \
+    --checkpoint checkpoints/best.pt \
+    --input "Hello, how are you?" \
+    --beam_size 4
+```
+
+**Supported Languages:** Hindi, Bengali, Telugu, Tamil, Gujarati, Kannada, Malayalam, Marathi, Punjabi, Urdu, Odia, Assamese
+
+**Language Codes:** `hi`, `bn`, `te`, `ta`, `gu`, `kn`, `ml`, `mr`, `pa`, `ur`, `or`, `as`
+
+**One-Command Training for All Languages:**
+```bash
+# Train models for all 6 languages at once
+python scripts/train_all_languages.py 1000
+```
+
+This automatically:
+- Downloads/creates datasets for German, Hindi, Tamil, Telugu, Gujarati, Bengali
+- Trains tokenizers for each language
+- Creates config files for each language
+- Trains models for all languages
+- Saves each model as `checkpoints/best_<lang>.pt`
+
+**Train Individual Languages:**
+```bash
+# For Hindi
+bash scripts/train_indian_language.sh hi 1000
+
+# For Bengali
+bash scripts/train_indian_language.sh bn 1000
+
+# For Tamil, Telugu, Gujarati - replace 'bn' with 'ta', 'te', 'gu'
+```
 
 ### 1. Prepare Data
 
@@ -303,13 +407,23 @@ print(translation)
 
 ## 🌐 Web UI
 
-The project includes a Flask-based web interface for interactive translation.
+The project includes a Flask-based web interface for interactive translation with **multi-language support**.
 
 ### Start Server
 
+**Single Model:**
 ```bash
 export CHECKPOINT_PATH=checkpoints/best.pt
 export CONFIG_PATH=configs/transformer_base.yaml
+python app.py
+```
+
+**Multiple Models (German + Hindi):**
+```bash
+export CHECKPOINT_PATH_DE=checkpoints/best.pt
+export CONFIG_PATH_DE=configs/transformer_base.yaml
+export CHECKPOINT_PATH_HI=checkpoints/best_hi.pt
+export CONFIG_PATH_HI=configs/transformer_hindi.yaml
 python app.py
 ```
 
@@ -319,10 +433,50 @@ Open `http://localhost:5000` in your browser.
 
 ### Features
 
-- Real-time translation
-- Configurable beam size
-- Example sentences
-- Clean, modern interface
+- ✅ **Language Selection**: Dropdown to select target language (🇩🇪 German, 🇮🇳 Hindi, 🇧🇩 Bengali, 🇮🇳 Telugu, 🇮🇳 Tamil, 🇮🇳 Gujarati)
+- ✅ **Multi-Model Support**: Load and switch between multiple language models simultaneously
+- ✅ **Real-time Translation**: Instant translation as you type
+- ✅ **Configurable Beam Size**: Choose between greedy (1) or beam search (4, 8)
+- ✅ **Example Sentences**: Click to try pre-loaded examples
+- ✅ **Dynamic Loading**: Models load automatically when selected
+- ✅ **Clean, Modern Interface**: Beautiful gradient design with language flags
+
+**Language Dropdown:** The UI shows all 6 configured languages (German, Hindi, Bengali, Telugu, Tamil, Gujarati). Models load automatically when selected.
+
+**Setting Up Multiple Languages:**
+
+1. **Train models for each language** and save with language-specific names:
+   ```bash
+   # Train German model
+   python scripts/download_data.py --use_sample --sample_size 1000 --split
+   bash scripts/train_tokenizer.sh data/cleaned/train.en data/cleaned/train.de data/tokenized 32000 true
+   python -m src.trainer --config configs/transformer_base.yaml
+   cp checkpoints/best.pt checkpoints/best_de.pt
+   
+   # Train Hindi model
+   bash scripts/train_indian_language.sh hi 1000
+   cp checkpoints/best.pt checkpoints/best_hi.pt
+   ```
+
+2. **Start web UI** - models are auto-detected if named correctly:
+   ```bash
+   # Option A: Auto-detection (if models named checkpoints/best_<lang>.pt)
+   python app.py
+   
+   # Option B: Environment variables (recommended)
+   export CHECKPOINT_PATH_DE=checkpoints/best_de.pt
+   export CONFIG_PATH_DE=configs/transformer_base.yaml
+   export CHECKPOINT_PATH_HI=checkpoints/best_hi.pt
+   export CONFIG_PATH_HI=configs/transformer_hindi.yaml
+   python app.py
+   ```
+
+3. **Auto-detection paths checked:**
+   - `checkpoints/best_<lang>.pt` (e.g., `checkpoints/best_hi.pt`)
+   - `checkpoints/<lang>/best.pt` (e.g., `checkpoints/hi/best.pt`)
+   - Environment variables: `CHECKPOINT_PATH_<LANG>`
+
+**If a model isn't found:** The UI shows a helpful error message with instructions on how to train the model.
 
 ## 🧪 Experiments
 

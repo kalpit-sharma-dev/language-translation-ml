@@ -1,14 +1,16 @@
 checkpoint_dir: checkpoints
 data:
   dev_src: data/cleaned/dev.en
-  dev_tgt: data/cleaned/dev.de
+  dev_tgt: data/cleaned/dev.gu
   joint_tokenizer: true
   max_len: 250
+  source_lang: en
+  target_lang: gu
   test_src: data/cleaned/test.en
-  test_tgt: data/cleaned/test.de
-  tokenizer_dir: data/tokenized_de
+  test_tgt: data/cleaned/test.gu
+  tokenizer_dir: data/tokenized_gu
   train_src: data/cleaned/train.en
-  train_tgt: data/cleaned/train.de
+  train_tgt: data/cleaned/train.gu
 log_dir: logs
 model:
   d_model: 512

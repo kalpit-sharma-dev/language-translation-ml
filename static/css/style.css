@@ -42,6 +42,46 @@ main {
     padding: 40px;
 }
 
+.language-selector {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    justify-content: center;
+}
+
+.language-selector label {
+    font-weight: 600;
+    font-size: 1.1em;
+    color: #555;
+    margin: 0;
+}
+
+.language-selector select {
+    padding: 10px 20px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    background: white;
+    min-width: 200px;
+    transition: border-color 0.3s;
+}
+
+.language-selector select:hover {
+    border-color: #667eea;
+}
+
+.language-selector select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
 .translation-box {
     display: grid;
     grid-template-columns: 1fr 1fr;

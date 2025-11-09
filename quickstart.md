@@ -43,14 +43,33 @@ python -c "import torch; print('PyTorch:', torch.__version__); print('CUDA avail
 
 ### Option A: Use Sample Data (Quick Testing) - RECOMMENDED FOR FIRST RUN
 
-For quick testing, create a small sample dataset:
-
+**For English → German:**
 ```bash
 python scripts/download_data.py --use_sample --sample_size 1000 --split
 ```
 
+**For English → Indian Languages (e.g., Hindi, Bengali, Telugu, Tamil, Gujarati):**
+```bash
+# Hindi
+python scripts/download_indian_languages.py --target_lang hi --use_sample --sample_size 1000 --split
+
+# Bengali
+python scripts/download_indian_languages.py --target_lang bn --use_sample --sample_size 1000 --split
+
+# Telugu
+python scripts/download_indian_languages.py --target_lang te --use_sample --sample_size 1000 --split
+
+# Tamil
+python scripts/download_indian_languages.py --target_lang ta --use_sample --sample_size 1000 --split
+
+# Gujarati
+python scripts/download_indian_languages.py --target_lang gu --use_sample --sample_size 1000 --split
+```
+
+**Language Codes:** `hi` (Hindi), `bn` (Bengali), `te` (Telugu), `ta` (Tamil), `gu` (Gujarati), `kn` (Kannada), `ml` (Malayalam), `mr` (Marathi), `pa` (Punjabi), `ur` (Urdu), `or` (Odia), `as` (Assamese)
+
 This creates:
-- `data/raw/train.en` and `data/raw/train.de` (1000 examples)
+- `data/raw/train.en` and `data/raw/train.de` (or `train.hi`, etc.)
 - `data/cleaned/train.en`, `train.de` (~980 examples after filtering)
 - `data/cleaned/dev.en`, `dev.de` (~10 examples)
 - `data/cleaned/test.en`, `test.de` (~10 examples)
@@ -75,7 +94,7 @@ python scripts/download_data.py --split
 
 1. Place your parallel files in `data/raw/`:
    - `train.en` (English source)
-   - `train.de` (German target)
+   - `train.de` (German target) or `train.hi` (Hindi), `train.bn` (Bengali), etc.
 
 2. Split into train/dev/test:
 ```bash
@@ -337,38 +356,171 @@ Open `http://localhost:5000` in your browser.
 
 ### Using Web UI
 
-1. Enter English text in the left textarea
-2. Select beam size (1, 4, or 8)
-3. Click "Translate" or press Ctrl+Enter (Cmd+Enter on Mac)
-4. View German translation in the right textarea
-5. Click example sentences to try them quickly
+1. **Select Target Language**: Choose from the dropdown at the top (🇩🇪 German, 🇮🇳 Hindi, etc.)
+2. Enter English text in the left textarea
+3. Select beam size (1, 4, or 8)
+4. Click "Translate" or press Ctrl+Enter (Cmd+Enter on Mac)
+5. View translation in the selected language
+6. **Switch Languages**: Change the dropdown to translate to a different language
+7. Click example sentences to try them quickly
 
-## Complete End-to-End Example
+**Language Selection Features:**
+- Dropdown shows all available models
+- Models load automatically when selected
+- Target label updates to show selected language (e.g., "🇮🇳 Hindi Translation:")
+- Previous translation clears when switching languages
 
-Here's a complete example from scratch:
+## Complete End-to-End Examples
+
+### Example 1: English → German (Complete Workflow)
 
 ```bash
-# 1. Install dependencies
+# Step 1: Install dependencies
 pip install -r requirements.txt
 
-# 2. Create sample data
+# Step 2: Create sample data
 python scripts/download_data.py --use_sample --sample_size 1000 --split
 
-# 3. Train tokenizer
+# Step 3: Train tokenizer
 bash scripts/train_tokenizer.sh data/cleaned/train.en data/cleaned/train.de data/tokenized 32000 true
 
-# 4. Train model
-bash scripts/train.sh configs/transformer_base.yaml
+# Step 4: Train model
+python -m src.trainer --config configs/transformer_base.yaml
 
-# 5. Evaluate
-bash scripts/eval.sh checkpoints/best.pt
+# Step 5: Evaluate
+python -m src.evaluate --checkpoint checkpoints/best.pt --config configs/transformer_base.yaml
 
-# 6. Test translation
+# Step 6: Test translation
 python -m src.infer --checkpoint checkpoints/best.pt --input "Hello, how are you?" --beam_size 4
 
-# 7. Start web UI
+# Step 7: Start web UI
 CHECKPOINT_PATH=checkpoints/best.pt CONFIG_PATH=configs/transformer_base.yaml python app.py
+# Open http://localhost:5000 in browser
 ```
+
+### Example 2: English → Hindi (Complete Workflow)
+
+```bash
+# Step 1: Install dependencies (if not done)
+pip install -r requirements.txt
+
+# Step 2: Download Hindi dataset
+python scripts/download_indian_languages.py --target_lang hi --use_sample --sample_size 1000 --split
+
+# Step 3: Train tokenizer
+bash scripts/train_tokenizer.sh data/cleaned/train.en data/cleaned/train.hi data/tokenized 32000 true
+
+# Step 4: Train model
+python -m src.trainer --config configs/transformer_hindi.yaml
+
+# Step 5: Evaluate
+python -m src.evaluate --checkpoint checkpoints/best.pt --config configs/transformer_hindi.yaml
+
+# Step 6: Test translation
+python -m src.infer --checkpoint checkpoints/best.pt --input "Hello, how are you?" --beam_size 4
+
+# Step 7: Start web UI with Hindi model
+CHECKPOINT_PATH_HI=checkpoints/best.pt CONFIG_PATH_HI=configs/transformer_hindi.yaml python app.py
+# Open http://localhost:5000, select Hindi from dropdown
+```
+
+### Example 3: Train All Languages at Once
+
+**Train models for all 6 languages (German, Hindi, Tamil, Telugu, Gujarati, Bengali):**
+
+```bash
+# Option A: Using Python script (recommended, cross-platform)
+python scripts/train_all_languages.py 1000
+
+# Option B: Using bash script (Linux/Mac)
+bash scripts/train_all_languages.sh 1000
+```
+
+This will:
+1. Download/create datasets for all languages
+2. Train tokenizers for each language
+3. Create config files for each language
+4. Train models for all languages
+5. Save each model as `checkpoints/best_<lang>.pt`
+
+**After training, start the web UI:**
+```bash
+python app.py
+```
+
+All 6 languages will be available in the dropdown!
+
+### Example 4: Train Individual Languages
+
+```bash
+# For Hindi (1000 sample sentences)
+bash scripts/train_indian_language.sh hi 1000
+
+# For Bengali
+bash scripts/train_indian_language.sh bn 1000
+
+# For Tamil
+bash scripts/train_indian_language.sh ta 1000
+
+# For Telugu
+bash scripts/train_indian_language.sh te 1000
+
+# For Gujarati
+bash scripts/train_indian_language.sh gu 1000
+
+# Then save each model:
+cp checkpoints/best.pt checkpoints/best_hi.pt
+cp checkpoints/best.pt checkpoints/best_bn.pt
+# etc.
+```
+
+### Example 5: Multiple Languages in Web UI
+
+**IMPORTANT:** To use multiple languages, you need to train models for each language and save them with language-specific names.
+
+```bash
+# Step 1: Train German model
+python scripts/download_data.py --use_sample --sample_size 1000 --split
+bash scripts/train_tokenizer.sh data/cleaned/train.en data/cleaned/train.de data/tokenized 32000 true
+python -m src.trainer --config configs/transformer_base.yaml
+# Save with language-specific name
+cp checkpoints/best.pt checkpoints/best_de.pt
+
+# Step 2: Train Hindi model (use different data directory or rename after)
+python scripts/download_indian_languages.py --target_lang hi --use_sample --sample_size 1000 --split
+bash scripts/train_tokenizer.sh data/cleaned/train.en data/cleaned/train.hi data/tokenized 32000 true
+python -m src.trainer --config configs/transformer_hindi.yaml
+# Save with language-specific name
+cp checkpoints/best.pt checkpoints/best_hi.pt
+
+# Step 3: Start web UI
+# Option A: Use environment variables (recommended)
+export CHECKPOINT_PATH_DE=checkpoints/best_de.pt
+export CONFIG_PATH_DE=configs/transformer_base.yaml
+export CHECKPOINT_PATH_HI=checkpoints/best_hi.pt
+export CONFIG_PATH_HI=configs/transformer_hindi.yaml
+python app.py
+
+# Option B: The UI will auto-detect models if named correctly:
+# - checkpoints/best_de.pt (for German)
+# - checkpoints/best_hi.pt (for Hindi)
+# - checkpoints/best_bn.pt (for Bengali)
+# etc.
+python app.py
+
+# Now you can switch between languages in the dropdown!
+# If a model isn't found, you'll see a helpful error message with instructions.
+```
+
+**Note:** The UI automatically searches for models in these locations:
+- `checkpoints/best_<lang>.pt` (e.g., `checkpoints/best_hi.pt`)
+- `checkpoints/<lang>/best.pt` (e.g., `checkpoints/hi/best.pt`)
+- Environment variables: `CHECKPOINT_PATH_<LANG>` (e.g., `CHECKPOINT_PATH_HI`)
+
+**Troubleshooting:**
+- If a language shows "Model not found", train a model for that language first
+- Use `bash scripts/setup_multiple_languages.sh` to check which models are available
+- See error messages in the UI for specific instructions
 
 ## Troubleshooting
 
@@ -445,7 +597,7 @@ python -m src.infer \
 **Expected results:**
 - Tokenizer trains successfully (vocab size auto-adjusted)
 - Model trains without errors
-- Inference produces German translation
+- Inference produces translation in the target language
 
 ## Next Steps
 

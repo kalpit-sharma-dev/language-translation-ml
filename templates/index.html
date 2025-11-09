@@ -3,17 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neural Machine Translation - English to German</title>
+    <title>Neural Machine Translation</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <div class="container">
         <header>
             <h1>🌐 Neural Machine Translation</h1>
-            <p class="subtitle">English → German Translation using Transformer</p>
+            <p class="subtitle">Multilingual Translation using Transformer</p>
         </header>
 
         <main>
+            <div class="language-selector">
+                <label for="language-select">Translate to:</label>
+                <select id="language-select">
+                    {% if languages %}
+                        {% for lang in languages %}
+                        <option value="{{ lang.code }}">{{ lang.flag }} {{ lang.name }}</option>
+                        {% endfor %}
+                    {% else %}
+                        <option value="">No languages available</option>
+                    {% endif %}
+                </select>
+            </div>
+
             <div class="translation-box">
                 <div class="input-section">
                     <label for="source-text">English Text:</label>
@@ -35,10 +48,10 @@
                 </div>
 
                 <div class="output-section">
-                    <label for="target-text">German Translation:</label>
+                    <label for="target-text" id="target-label">Translation:</label>
                     <textarea 
                         id="target-text" 
-                        placeholder="Translation will appear here..."
+                        placeholder="Translation will appear here (supports any language)..."
                         rows="6"
                         readonly
                     ></textarea>
